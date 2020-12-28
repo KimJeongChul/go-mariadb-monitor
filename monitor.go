@@ -9,22 +9,23 @@ import (
 
 	"github.com/go-chi/chi"
 
+	"github.com/KimJeongChul/go-mariadb-monitor/broker"
 	cerror "github.com/KimJeongChul/go-mariadb-monitor/error"
-	"github.com/KimJeongChul/go-redis-monitor/broker"
-	"github.com/KimJeongChul/go-redis-monitor/dashboard"
-	"github.com/KimJeongChul/go-redis-monitor/logger"
+	"github.com/KimJeongChul/go-mariadb-monitor/logger"
+	"github.com/KimJeongChul/go-mariadb-monitor/mariadb"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 )
 
 // MonitorConfig
 type MonitorConfig struct {
-	Port          string `json:"port"`
-	Period        int    `json:"period"`
-	RedisAddr     string `json:"redisAddr"`
-	RedisPort     string `json:"redisPort"`
-	RedisDB       string `json:"redisDB"`
-	RedisPassword string `json:"redisPassword"`
-	LogPath       string `json:"logPath"`
+	Port              string `json:"port"`
+	Period            int    `json:"period"`
+	MariaDBServerAddr string `json:"mariaDBServerAddr"`
+	MariaDBServerPort string `json:"mariaDBServerPort"`
+	MariaDBUser       string `json:"mariaDBUser"`
+	MariaDBName       string `json:"mariaDBName"`
+	MariaDBPassword   string `json:"mariaDBPassword"`
+	LogPath           string `json:"logPath"`
 }
 
 // Read config.json and load MonitorConfig
@@ -56,7 +57,7 @@ func main() {
 	}
 
 	// Logging file
-	logPath := config.LogPath + "/%Y%m%d.log"
+	logPath := config.LogPath + "log/%Y%m%d.log"
 	rlLogger, err := rotatelogs.New(logPath)
 	if err != nil {
 		logger.LogE("main", "UNDEFINED", "Cannot create log file:", logPath, "error:", err)
@@ -72,9 +73,20 @@ func main() {
 	}
 	broker.Start()
 
+	// MariaDB Client
+	mariaDBClient, cErr := mariadb.NewMariaDBClient(config.MariaDBServerAddr, config.MariaDBServerPort, config.MariaDBUser, config.MariaDBPassword, config.MariaDBName)
+	if cErr != nil {
+		logger.LogE("main", "main", "Failed to create MariaDBClient")
+		return
+	}
+
+	// MariaDB Profiler
+	mariaDBProfiler := mariadb.NewMariaDBProfiler(config.Period, mariaDBClient, broker)
+	mariaDBProfiler.Start()
+
 	// Router
 	router := chi.NewRouter()
-	router.Get("/", dashboard.Web)
+	//router.Get("/", dashboard.Web)
 	router.Handle("/js/*", http.StripPrefix("/js/", http.FileServer(http.Dir("static/js"))))
 	router.Handle("/css/*", http.StripPrefix("/css/", http.FileServer(http.Dir("static/css"))))
 	router.Handle("/resource/*", http.StripPrefix("/resource/", http.FileServer(http.Dir("static/resource"))))
