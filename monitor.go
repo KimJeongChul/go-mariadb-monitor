@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi"
 
 	"github.com/KimJeongChul/go-mariadb-monitor/broker"
+	"github.com/KimJeongChul/go-mariadb-monitor/dashboard"
 	cerror "github.com/KimJeongChul/go-mariadb-monitor/error"
 	"github.com/KimJeongChul/go-mariadb-monitor/logger"
 	"github.com/KimJeongChul/go-mariadb-monitor/mariadb"
@@ -82,11 +83,11 @@ func main() {
 
 	// MariaDB Profiler
 	mariaDBProfiler := mariadb.NewMariaDBProfiler(config.Period, mariaDBClient, broker)
-	mariaDBProfiler.Start()
+	go mariaDBProfiler.Start()
 
 	// Router
 	router := chi.NewRouter()
-	//router.Get("/", dashboard.Web)
+	router.Get("/", dashboard.Web)
 	router.Handle("/js/*", http.StripPrefix("/js/", http.FileServer(http.Dir("static/js"))))
 	router.Handle("/css/*", http.StripPrefix("/css/", http.FileServer(http.Dir("static/css"))))
 	router.Handle("/resource/*", http.StripPrefix("/resource/", http.FileServer(http.Dir("static/resource"))))
