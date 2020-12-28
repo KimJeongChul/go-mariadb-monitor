@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>MariaDB Monitor</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <script src="/js/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/main.css" style="background-color:darksalmon">
+</head>
+
+<body>
+    <script type="text/javascript">
+        // SSE Event Register
+        let eventListener = new EventSource("http://localhost:8080/listen/")
+        eventListener.onmessage = (event) => {
+            let { type, data } = event
+            console.log(event);
+            parsedMsg = JSON.parse(data);
+            console.log(parsedMsg);
+            switch (parsedMsg.method) {
+                case "updateMariaDBStats":
+                    {
+                        const threadsConnected = parsedMsg.threadsConnected;
+                        const threadsRunning = parsedMsg.threadsRunning;
+                        const connections = parsedMsg.connections;
+                        const innodbBufferPoolReadRequests = parsedMsg.innodbBufferPoolReadRequests;
+                        const innodbBufferPoolReads = parsedMsg.innodbBufferPoolReads;
+                        const innodbRowLockWaits = parsedMsg.innodbRowLockWaits;
+                        const innodbRowLockCurrentWaits = parsedMsg.innodbRowLockCurrentWaits;
+                        const innodbRowLockTime = parsedMsg.innodbRowLockTime;
+                        const memoryUsed = parsedMsg.memoryUsed;
+                        const bytesReceived = parsedMsg.bytesReceived;
+                        const bytesSent = parsedMsg.bytesSent;
+
+                        const tdConnections = document.getElementById("connections");
+                        tdConnections.innerHTML = connections;
+
+                        const tdThreadsConnected = document.getElementById("threadsConnected");
+                        tdThreadsConnected.innerHTML = threadsConnected;
+
+                        const tdMemoryUsed = document.getElementById("memoryUsed");
+                        tdMemoryUsed.innerHTML = memoryUsed;
+
+                        const tdThreadsRunning = document.getElementById("threadsRunning");
+                        tdThreadsRunning.innerHTML = threadsRunning;
+
+                        const tdBytesReceived = document.getElementById("bytesReceived");
+                        tdBytesReceived.innerHTML = bytesReceived;
+
+                        const tdBytesSent = document.getElementById("bytesSent");
+                        tdBytesSent.innerHTML = bytesSent;
+
+                        const tdInnoDBBPRR = document.getElementById("innodbBufferPoolReadRequests");
+                        tdInnoDBBPRR.innerHTML = innodbBufferPoolReadRequests;
+
+                        const tdInnoDBPR = document.getElementById("innodbBufferPoolReads");
+                        tdInnoDBPR.innerHTML = innodbBufferPoolReads;
+
+                        const tdInnoDBRLW = document.getElementById("innodbRowLockWaits");
+                        tdInnoDBRLW.innerHTML = innodbRowLockWaits;
+
+                        const tdInnoDBRLCW = document.getElementById("innodbRowLockCurrentWaits");
+                        tdInnoDBRLCW.innerHTML = innodbRowLockCurrentWaits;
+
+                        const tdInnoDBRLT = document.getElementById("innodbRowLockTime");
+                        tdInnoDBRLT.innerHTML = innodbRowLockTime;
+                    }
+                    break;
+            }
+        }
+    </script>
+    <div class="wrapper" style="background-color: white;">
+        <div class="content-wrapper" id="pjax-container" style="margin-left:0px;">
+            <script src="/js/chart.min.js"></script>
+
+            <section class="content-header">
+                <center>
+                <h1 class="header-title">
+                    MariaDB Montior
+                    <img src="/resource/mariadb-icon.png" style="width: 10%;">
+                </h1>
+                <h4><a href="https://github.com/KimJeongChul/go-mariadb-monitor">KimJeongChul/go-mariadb-monitor</a></h4>
+                </center>
+                <ol class="breadcrumb">
+                    <li>Dashboard</li>
+                </ol>
+            </section>
+            <section class="content">
+                <!-- MariaDB DB Statisticis Table -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box box-">
+                            <h3 class="text-center" style="font-weight:700; padding-top: 20px;">MariaDB DB statistics table
+                                </h2>
+                                <div class="box-body" style="overflow-x: scroll;overflow-y: hidden;">
+                                    <table class="table table-hover" style="min-width: 1000px;table-layout: auto;">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Value</th>
+                                                <th>Name</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr height="30">
+                                                <td>Connections</td>
+                                                <td id="connections"></td>
+                                                <td>Thread Connected</td>
+                                                <td id="threadsConnected"></td>
+                                            </tr>
+                                            <tr height="30">
+                                                <td>Thread Running</td>
+                                                <td id="threadsRunning"></td>
+                                                <td>Memory Used</td>
+                                                <td id="memoryUsed"></td>
+                                            </tr>
+                                            <tr height="30">
+                                                <td>Bytes Received</td>
+                                                <td id="bytesReceived"></td>
+                                                <td>Bytes Sent</td>
+                                                <td id="bytesSent"></td>
+                                            </tr>
+                                            <tr height="30">
+                                                <td>Innodb Buffer Pool Read Requests</td>
+                                                <td id="innodbBufferPoolReadRequests"></td>
+                                                <td>Innodb Buffer Pool Reads</td>
+                                                <td id="innodbBufferPoolReads"></td>
+                                            </tr>
+                                            <tr height="30">
+                                                <td>Innodb Row Lock Waits</td>
+                                                <td id="innodbRowLockWaits"></td>
+                                                <td>Innodb Row Lock Current Waits</td>
+                                                <td id="innodbRowLockCurrentWaits"></td>
+                                            </tr>
+                                            <tr height="30">
+                                                <td>Innodb Row Lock Time</td>
+                                                <td id="innodbRowLockTime"></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+</body>
+</html>
