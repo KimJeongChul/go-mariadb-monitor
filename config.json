@@ -1,0 +1,9 @@
+{
+    "port": "8080",
+    "mariaDBServerAddr": "localhost",
+    "mariaDBUser": "root",
+    "mariaDBServerPort": "3306",
+    "mariaDBPassword": "mariadb",
+    "mariaDBName": "mysql",
+    "period": 10
+}
